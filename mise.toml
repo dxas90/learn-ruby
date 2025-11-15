@@ -1,0 +1,11 @@
+[tools]
+age = "latest"
+ruby = "3"
+uv = "latest"
+
+[settings]
+experimental = true
+
+[env]
+# Use the project name derived from the current directory
+PROJECT_NAME = "{{ config_root | basename }}"
