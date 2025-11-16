@@ -52,11 +52,10 @@ autoscaling:
 
 resources:
   limits:
-    cpu: 1m
-    memory: 56Mi
+    memory: 256Mi
   requests:
-    cpu: 1m
-    memory: 56Mi
+    cpu: 100m
+    memory: 256Mi
 
 chart:
   label: "learn-ruby"

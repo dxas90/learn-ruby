@@ -22,7 +22,7 @@ port ENV.fetch('PORT') { 4567 }
 #
 workers ENV.fetch('WORKERS') { 1 }.to_i
 
-pidfile "tmp/puma.pid"
-state_path "tmp/puma.state"
+pidfile "/tmp/puma.pid"
+state_path "/tmp/puma.state"
 
-stdout_redirect "log/puma.stdout.log", "log/puma.stderr.log", true
+# stdout_redirect "/tmp/puma.stdout.log", "/tmp/puma.stderr.log", true

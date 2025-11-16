@@ -21,9 +21,8 @@ WORKDIR /app
 # Copy Gem definitions early for layer caching
 COPY Gemfile Gemfile.lock ./
 
-# Install gems with caching
-RUN --mount=type=cache,target=/usr/local/bundle \
-    bundle config set deployment 'true' && \
+# Install gems
+RUN bundle config set deployment 'true' && \
     bundle config set without 'development test' && \
     bundle install
 
