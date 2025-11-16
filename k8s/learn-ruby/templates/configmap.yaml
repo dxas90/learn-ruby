@@ -7,6 +7,9 @@ metadata:
 {{ include "base.labels" $ | indent 4 }}
 data:
   EXTRA_DUMMY: VALUE
+{{- with .Values.env.variables }}
+  {{- toYaml . | nindent 2 }}
+{{- end }}
 {{- with .Values.extraEnv }}
   {{- toYaml . | nindent 2 }}
 {{- end }}

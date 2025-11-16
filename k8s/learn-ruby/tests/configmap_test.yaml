@@ -25,3 +25,6 @@ tests:
     asserts:
       - isNotNull:
           path: data
+      - equal:
+          path: data.PORT
+          value: "4567"

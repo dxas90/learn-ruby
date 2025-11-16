@@ -66,6 +66,7 @@ env:
   # if env_file_path is provided in cookiecutter.json
   variables:
     APP_ENV: "production"
+    PORT: "4567"
 # Common secret and settings references
 common:
   secrets:
