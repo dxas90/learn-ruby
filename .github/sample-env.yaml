@@ -1,7 +1,7 @@
 env:
   variables:
     NODE_ENV: development
-    PORT: "3000"
+    PORT: "4567"
     HOST: 0.0.0.0
     CORS_ORIGIN: "*"
     SESSION_SECRET: your-super-secret-session-key-here

@@ -4,8 +4,8 @@ Focused guide for AI agents working in this Sinatra microservice project.
 
 ## Architecture Overview
 
-**Application:** Single-file Sinatra app (`app.rb`) with 6 RESTful endpoints: `/`, `/ping`, `/healthz`, `/info`, `/version`, `/echo`  
-**Deployment:** Containerized with Puma server, Helm chart for Kubernetes, full CI/CD pipeline with security scanning  
+**Application:** Single-file Sinatra app (`app.rb`) with 6 RESTful endpoints: `/`, `/ping`, `/healthz`, `/info`, `/version`, `/echo`
+**Deployment:** Containerized with Puma server, Helm chart for Kubernetes, full CI/CD pipeline with security scanning
 **Design philosophy:** Minimal business logic, security-first middleware, JSON-only responses with consistent format
 
 ## Critical Files & Gotchas
@@ -20,6 +20,7 @@ Focused guide for AI agents working in this Sinatra microservice project.
 - `k8s/learn-ruby/values.yaml` — **Port must be 4567** (matches Puma default). Environment variables go in `env.variables.*` and render to ConfigMap
 - `k8s/learn-ruby/templates/configmap.yaml` — Renders `env.variables` from values.yaml (if not set, PORT defaults but won't be in ConfigMap)
 - `k8s/learn-ruby/templates/_helpers.tpl` — Use `base.fullname`, `base.labels`, `base.selectorLabels` for consistency
+- `.github/sample-env.yaml` — CI override file setting PORT=4567 for testing (must match service port)
 
 ## Developer Workflows
 
@@ -74,22 +75,22 @@ All JSON endpoints return: `{ success: true|false, data: {...}, timestamp: "ISO8
 ## Common Pitfalls
 
 ### Docker Build Issues
-❌ **Don't use** `--mount=type=cache,target=/usr/local/bundle` — gems won't persist in image  
+❌ **Don't use** `--mount=type=cache,target=/usr/local/bundle` — gems won't persist in image
 ✅ **Do use** standard `RUN bundle install` with `deployment: true` mode
 
 ### Port Mismatches
-❌ **Don't change** `service.port` without updating `PORT` env var  
-✅ **Keep aligned:** `values.yaml` port 4567 = `puma.rb` default = `app.rb` set :port
+❌ **Don't change** `service.port` without updating `PORT` env var in both `values.yaml` and `.github/sample-env.yaml`
+✅ **Keep aligned:** `values.yaml` port 4567 = `sample-env.yaml` PORT = `puma.rb` default = `app.rb` set :port
 
 ### Writable Paths in K8s
-❌ **Don't write** to `./log/` or `./tmp/` (read-only filesystem)  
+❌ **Don't write** to `./log/` or `./tmp/` (read-only filesystem)
 ✅ **Use `/tmp`** for Puma pid/state files and any runtime writes
 
 ### Testing with Rack::Protection
-❌ **Don't forget** `Host` header in tests — causes 403 rejections  
+❌ **Don't forget** `Host` header in tests — causes 403 rejections
 ✅ **Set in spec_helper:** `header 'Host', 'localhost'` for all requests
 
-## CI/CD Pipeline
+CI/CD Pipeline
 
 Full workflow in `.github/workflows/full-workflow.yml`:
 1. **Lint** — Ruby syntax check
