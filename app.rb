@@ -29,6 +29,59 @@ set :bind, ENV['HOST'] || '0.0.0.0'
 set :public_folder, 'static'
 set :logging, false  # Disable Sinatra's default logging (we handle it in before filter)
 
+# Optional Prometheus client + OpenTelemetry initialization (best-effort)
+begin
+  require 'prometheus/client'
+  require 'prometheus/client/formats/text'
+  PROM_REGISTRY = Prometheus::Client.registry
+  # Guard metric construction in case of gem API incompatibility
+  begin
+    # The prometheus-client gem changed its constructor to expect a docstring keyword
+    # Use the keyword form if available to support newer gem versions.
+    begin
+      HTTP_REQUESTS = Prometheus::Client::Counter.new(:http_requests_total, docstring: 'Total HTTP requests', labels: [:method, :path, :status])
+    rescue ArgumentError
+      # Fallback to positional arg for older gem versions
+      HTTP_REQUESTS = Prometheus::Client::Counter.new(:http_requests_total, 'Total HTTP requests', labels: [:method, :path, :status])
+    end
+    begin
+      HTTP_REQUEST_DURATION = Prometheus::Client::Histogram.new(:http_request_duration_seconds, docstring: 'HTTP request duration (s)', labels: [:method, :path, :status])
+    rescue ArgumentError
+      HTTP_REQUEST_DURATION = Prometheus::Client::Histogram.new(:http_request_duration_seconds, 'HTTP request duration (s)', labels: [:method, :path, :status])
+    end
+    PROM_REGISTRY.register(HTTP_REQUESTS) rescue nil
+    PROM_REGISTRY.register(HTTP_REQUEST_DURATION) rescue nil
+    settings.logger.info '[INFO] Prometheus client initialized'
+  rescue StandardError => e
+    # If metric constructor fails (gem API mismatch), disable metrics gracefully
+    PRI = e
+    PROM_REGISTRY = nil
+    HTTP_REQUESTS = nil
+    settings.logger.info "[INFO] Prometheus client present but failed to initialize metrics: #{e.message}"
+  end
+rescue LoadError
+  PROM_REGISTRY = nil
+  HTTP_REQUESTS = nil
+  settings.logger.info '[INFO] Prometheus client not installed; /metrics disabled'
+end
+
+begin
+  if ENV['OTEL_EXPORTER_OTLP_ENDPOINT']
+    require 'opentelemetry/sdk'
+    require 'opentelemetry/exporter/otlp'
+    OpenTelemetry::SDK.configure do |c|
+      c.service_name = 'learn-ruby'
+      # Use default configuration where possible; exporter will pick env vars
+      c.use_all
+    end
+    settings.logger.info '[INFO] OpenTelemetry configured'
+  end
+rescue LoadError => e
+  settings.logger.info "[INFO] OpenTelemetry gems missing or failed to init: #{e.message}"
+rescue => e
+  settings.logger.info "[INFO] OpenTelemetry init error: #{e.message}"
+end
+
 # Disable Rack::Protection in test environment to avoid Rack::Test 403 issues
 configure :test do
   disable :protection
@@ -39,6 +92,15 @@ before do
   if ENV['RACK_ENV'] != 'test'
     user_agent = request.user_agent || 'Unknown'
     settings.logger.info "#{request.request_method} #{request.path} - User-Agent: #{user_agent}"
+    # increment prometheus counter if present
+    begin
+      if defined?(HTTP_REQUESTS) && HTTP_REQUESTS
+        status_label = (response.status || 200).to_s
+        HTTP_REQUESTS.increment(labels: { method: request.request_method, path: request.path, status: status_label })
+      end
+    rescue => _e
+      # ignore metric errors
+    end
   end
 end
 
@@ -190,6 +252,11 @@ get '/' do
         path: '/echo',
         method: 'POST',
         description: 'Echo back the request body'
+      },
+      {
+        path: '/metrics',
+        method: 'GET',
+        description: 'Prometheus metrics endpoint'
       }
     ]
   }
@@ -311,4 +378,15 @@ end
 
 not_found do
   'This is nowhere to be found.'
+end
+
+# Prometheus metrics endpoint
+get '/metrics' do
+  if PROM_REGISTRY
+    content_type Prometheus::Client::Formats::Text::CONTENT_TYPE
+    Prometheus::Client::Formats::Text.marshal(PROM_REGISTRY)
+  else
+    status 204
+    ''
+  end
 end

@@ -67,6 +67,11 @@ env:
   variables:
     APP_ENV: "production"
     PORT: "4567"
+
+# Environment configuration as a config map
+extraEnv:
+  OTEL_EXPORTER_OTLP_ENDPOINT: "tempo.observability.svc.cluster.local:4317"
+
 # Common secret and settings references
 common:
   secrets:
