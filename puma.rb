@@ -25,4 +25,5 @@ workers ENV.fetch('WORKERS') { 1 }.to_i
 pidfile "/tmp/puma.pid"
 state_path "/tmp/puma.state"
 
-# stdout_redirect "/tmp/puma.stdout.log", "/tmp/puma.stderr.log", true
+# Disable access log (we handle logging in Sinatra app)
+quiet

@@ -27,6 +27,7 @@ APP_INFO = {
 set :port, ENV['PORT'] || 4567
 set :bind, ENV['HOST'] || '0.0.0.0'
 set :public_folder, 'static'
+set :logging, false  # Disable Sinatra's default logging (we handle it in before filter)
 
 # Disable Rack::Protection in test environment to avoid Rack::Test 403 issues
 configure :test do
