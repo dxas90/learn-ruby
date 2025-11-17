@@ -3,6 +3,17 @@ require 'rubygems'
 require 'sinatra'
 require 'json'
 require 'time'
+require 'logger'
+
+# Configure logger
+logger = Logger.new(STDOUT)
+logger.level = ENV['RACK_ENV'] == 'test' ? Logger::ERROR : (ENV['RACK_ENV'] == 'production' ? Logger::INFO : Logger::DEBUG)
+logger.formatter = proc do |severity, datetime, progname, msg|
+  "[#{severity}] #{datetime.utc.iso8601} #{msg}\n"
+end
+
+# Make logger available to Sinatra
+set :logger, logger
 
 # Application metadata
 APP_INFO = {
@@ -25,9 +36,8 @@ end
 # Middleware for logging (skip in test environment)
 before do
   if ENV['RACK_ENV'] != 'test'
-    timestamp = Time.now.utc.iso8601
     user_agent = request.user_agent || 'Unknown'
-    puts "[#{timestamp}] #{request.request_method} #{request.path} - User-Agent: #{user_agent}"
+    settings.logger.debug "#{request.request_method} #{request.path} - User-Agent: #{user_agent}"
   end
 end
 
