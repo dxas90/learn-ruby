@@ -7,7 +7,7 @@ require 'logger'
 
 # Configure logger
 logger = Logger.new(STDOUT)
-logger.level = ENV['RACK_ENV'] == 'test' ? Logger::ERROR : (ENV['RACK_ENV'] == 'production' ? Logger::INFO : Logger::DEBUG)
+logger.level = ENV['RACK_ENV'] == 'test' ? Logger::ERROR : Logger::INFO
 logger.formatter = proc do |severity, datetime, progname, msg|
   "[#{severity}] #{datetime.utc.iso8601} #{msg}\n"
 end
@@ -37,7 +37,7 @@ end
 before do
   if ENV['RACK_ENV'] != 'test'
     user_agent = request.user_agent || 'Unknown'
-    settings.logger.debug "#{request.request_method} #{request.path} - User-Agent: #{user_agent}"
+    settings.logger.info "#{request.request_method} #{request.path} - User-Agent: #{user_agent}"
   end
 end
 
