@@ -105,7 +105,7 @@ jobs:
           version: 'latest'
 
       - name: Install Helm unittest plugin
-        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git --verify=false
 
       - name: Run Helm unit tests
         run: helm unittest k8s/learn-ruby --output-type JUnit --output-file helm-test-results.xml
