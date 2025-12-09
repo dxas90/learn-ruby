@@ -82,6 +82,16 @@ rescue => e
   settings.logger.info "[INFO] OpenTelemetry init error: #{e.message}"
 end
 
+# Configure Rack::Protection to allow necessary hosts
+configure :development, :production do
+  set :protection, except: [:json_csrf]
+  set :protection, origin_whitelist: [
+    'http://localhost:4567',
+    'http://0.0.0.0:4567',
+    'http://127.0.0.1:4567'
+  ]
+end
+
 # Disable Rack::Protection in test environment to avoid Rack::Test 403 issues
 configure :test do
   disable :protection
