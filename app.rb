@@ -83,18 +83,8 @@ rescue => e
 end
 
 # Configure Rack::Protection with relaxed settings for containerized environments
-# Allow requests from private networks and behind reverse proxies
-set :protection, except: [:host_authorization, :http_origin]
-set :protection, :permitted_origins => [
-  'http://localhost',
-  'https://localhost',
-  'http://127.0.0.1',
-  'https://127.0.0.1',
-  'http://0.0.0.0',
-  /^https?:\/\/10\.\d+\.\d+\.\d+/,        # 10.0.0.0/8 (Docker/K8s internal)
-  /^https?:\/\/172\.(1[6-9]|2\d|3[01])\.\d+\.\d+/,  # 172.16.0.0/12 (Docker bridge)
-  /^https?:\/\/192\.168\.\d+\.\d+/,      # 192.168.0.0/16 (private networks)
-]
+# Disable problematic protections for API microservices behind reverse proxies
+set :protection, except: [:host_authorization, :http_origin, :remote_token, :session_hijacking]
 
 # Middleware for logging (skip in test environment)
 before do
