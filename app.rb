@@ -82,9 +82,12 @@ rescue => e
   settings.logger.info "[INFO] OpenTelemetry init error: #{e.message}"
 end
 
-# Configure Rack::Protection with relaxed settings for containerized environments
-# Disable problematic protections for API microservices behind reverse proxies
-set :protection, except: [:host_authorization, :http_origin, :remote_token, :session_hijacking]
+# Disable Rack::Protection for API microservices behind reverse proxies
+# Security is handled by:
+# - Custom security headers (see after block below)
+# - Traefik reverse proxy (TLS, rate limiting, WAF)
+# - CORS configuration
+disable :protection
 
 # Middleware for logging (skip in test environment)
 before do
