@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.19
 
 # Build stage - full Ruby image for compiling native extensions
-FROM ruby:3.4-alpine AS builder
+FROM ruby:3.4-alpine3.20 AS builder
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN bundle config set --local deployment 'true' && \
     bundle install --jobs 4 --retry 3
 
 # Production stage - minimal Alpine image
-FROM ruby:3.4-alpine AS production
+FROM ruby:3.4-alpine3.20 AS production
 
 # Default environment
 ARG ENVIRONMENT=production
