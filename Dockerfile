@@ -35,4 +35,8 @@ EXPOSE 4567
 # Run as non-root user
 USER appuser
 
+# Health check using Ruby's standard Net::HTTP library
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD ruby -rnet/http -e "begin; res = Net::HTTP.get_response(URI('http://localhost:4567/healthz')); exit(res.code == '200' ? 0 : 1); rescue; exit 1; end" || exit 1
+
 CMD ["bundle", "exec", "puma", "-C", "puma.rb"]
