@@ -40,7 +40,7 @@ before_script:
 # Code quality and linting
 lint:
   stage: lint
-  image: python:3.14-slim
+  image: python:3.15-slim
   before_script:
     - pip install -r requirements.txt -r requirements-dev.txt
   script:
@@ -55,7 +55,7 @@ lint:
 # Unit and integration tests
 test:
   stage: test
-  image: python:3.14-slim
+  image: python:3.15-slim
   before_script:
     - apt-get update && apt-get install -y curl
     - pip install -r requirements.txt -r requirements-dev.txt
