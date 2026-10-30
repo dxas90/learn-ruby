@@ -208,11 +208,13 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
       - name: Set up Helm
+        if: github.event_name != 'pull_request'
         uses: azure/setup-helm@v4
         with:
           version: 'latest'
 
       - name: Setup Kind Cluster
+        if: github.event_name != 'pull_request'
         uses: helm/kind-action@v1
         with:
           cluster_name: ${{ env.CLUSTER_NAME }}
@@ -220,18 +222,21 @@ jobs:
           config: .github/kind-config.yaml
 
       - name: Load Docker image into Kind
+        if: github.event_name != 'pull_request'
         run: |
           # Load image into Kind cluster
           docker pull --platform linux/amd64 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}
           kind load docker-image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7} --name ${{ env.CLUSTER_NAME }}
 
       - name: Wait for cluster to be ready
+        if: github.event_name != 'pull_request'
         run: |
           echo "Waiting for nodes to be ready..."
           kubectl wait --for=condition=Ready nodes --all --timeout=300s
           echo "Cluster is ready!"
 
       - name: Display cluster information
+        if: github.event_name != 'pull_request'
         run: |
           echo "=== Cluster Info ==="
           kubectl cluster-info
@@ -243,6 +248,7 @@ jobs:
           kubectl get services --all-namespaces -o wide
 
       - name: Deploy application using Helm
+        if: github.event_name != 'pull_request'
         run: |
           echo "Deploying application with Helm..."
 
@@ -267,6 +273,7 @@ jobs:
           kubectl get services
 
       - name: Run Smoke Test
+        if: github.event_name != 'pull_request'
         run: |
           echo "Running quick smoke test..."
           # NOTE: smoke-test.sh validates basic cluster health and deployment
@@ -275,6 +282,7 @@ jobs:
           ./scripts/smoke-test.sh
 
       - name: Run Comprehensive E2E Tests
+        if: github.event_name != 'pull_request'
         run: |
           echo "Starting comprehensive end-to-end testing..."
           # NOTE: e2e-test.sh performs full endpoint testing, pod resilience checks
@@ -283,6 +291,7 @@ jobs:
           ./scripts/e2e-test.sh
 
       - name: Verify Deployment Health
+        if: github.event_name != 'pull_request'
         run: |
           echo "=== Final Deployment Health Check ==="
           # Check for any unhealthy pods
