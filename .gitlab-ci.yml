@@ -21,7 +21,7 @@ variables:
   TRIVY_VERSION: "0.47.0"
 
 # Use a modern base image with necessary tools
-image: alpine/k8s:1.28.4
+image: alpine/k8s:1.37.1
 
 stages:
   - lint
@@ -144,7 +144,7 @@ build:
 # Deploy to staging environment
 deploy-staging:
   stage: deploy-staging
-  image: alpine/k8s:1.28.4
+  image: alpine/k8s:1.37.1
   environment:
     name: staging
     url: https://staging.learn-ruby.example.com
@@ -179,7 +179,7 @@ deploy-staging:
 # Deploy to production
 deploy-production:
   stage: deploy-production
-  image: alpine/k8s:1.28.4
+  image: alpine/k8s:1.37.1
   environment:
     name: production
     url: https://learn-ruby.example.com
@@ -196,7 +196,7 @@ deploy-production:
 # Cleanup job that always runs
 cleanup:
   stage: cleanup
-  image: alpine/k8s:1.28.4
+  image: alpine/k8s:1.37.1
   script:
     - echo "Cleaning up resources..."
     - docker system prune -f || true
