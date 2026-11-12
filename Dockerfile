@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.28
+# syntax=docker/dockerfile:1.29
 
 # Build stage - full Ruby image for compiling native extensions
 FROM ruby:3.4-alpine3.20 AS builder
